@@ -8,7 +8,8 @@ import com.github.walfie.tweetweb.models.{DAO, User}
 
 trait UsersService {
   def save(user: User): Unit
-  def find(id: String): Option[User]
+  def find(ids: Iterable[String]): List[User]
+  def findOne(id: String): Option[User] = find(List(id)).headOption
 }
 
 trait UsersServiceComponent {
@@ -25,13 +26,7 @@ class SlickUsersService(
     }
   }
 
-  def find(id: String): Option[User] = {
-    db.withSession { implicit session =>
-      dao.users.filter(_.id === id).firstOption
-    }
-  }
-
-  def findMulti(ids: Iterable[String]): List[User] = {
+  def find(ids: Iterable[String]): List[User] = {
     db.withSession { implicit session =>
       dao.users.filter(_.id.inSetBind(ids)).list
     }

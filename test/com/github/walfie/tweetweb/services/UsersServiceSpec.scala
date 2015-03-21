@@ -28,7 +28,7 @@ class UsersServiceSpec extends Specification with Mockito {
           updatedAt = new DateTime(0))
         usersService.save(user)
 
-        usersService.find("123") must beSome(user)
+        usersService.find(List("123")) must_== List(user)
       }
     }
 
@@ -43,16 +43,26 @@ class UsersServiceSpec extends Specification with Mockito {
         val userUpdated: User = User(id = "1", name = "this_is_different_now")
         usersService.save(userUpdated)
 
-        usersService.find("1") must beSome(userUpdated)
+        usersService.find(List("1")) must_== List(userUpdated)
       }
     }
 
     "find" should {
-      "return None if no user found" in new WithApplication(fakeApp) {
+      "return found users" in new WithApplication(fakeApp) {
         val dao = new DAO(DB.driver)
         val usersService = new SlickUsersService(DB, dao)
 
-        usersService.find("non existent id") must beNone
+        val user: User = User(id = "1")
+        usersService.save(user)
+
+        usersService.find(List("1", "2")) must_== List(user)
+      }
+
+      "return empty list if no users found" in new WithApplication(fakeApp) {
+        val dao = new DAO(DB.driver)
+        val usersService = new SlickUsersService(DB, dao)
+
+        usersService.find(List("non existent id")) must have size(0)
       }
     }
   }
