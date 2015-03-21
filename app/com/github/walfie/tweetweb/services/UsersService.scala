@@ -10,7 +10,10 @@ import com.github.walfie.tweetweb.util.PortableJodaSupport._
 trait UsersService {
   def save(user: User): Unit
   def saveAll(users: Iterable[User]): Unit
-  def find(ids: Iterable[String]): List[User]
+  def find(
+    ids: Iterable[String],
+    minUpdatedAt: DateTime = new DateTime(0)): List[User]
+
   def deleteOld(maxUpdatedAt: DateTime): Unit
 }
 
@@ -32,9 +35,14 @@ class SlickUsersService(
 
   def saveAll(users: Iterable[User]): Unit = users.foreach(save)
 
-  def find(ids: Iterable[String]): List[User] = {
+  def find(
+      ids: Iterable[String],
+      minUpdatedAt: DateTime = new DateTime(0)): List[User] = {
     db.withSession { implicit session =>
-      dao.users.filter(_.id.inSetBind(ids)).list
+      dao.users.filter { user =>
+        user.id.inSetBind(ids) &&
+        user.updatedAt >= minUpdatedAt
+      }.list
     }
   }
 
