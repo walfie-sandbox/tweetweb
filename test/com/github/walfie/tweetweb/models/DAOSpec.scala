@@ -12,7 +12,7 @@ class DAOSpec extends Specification {
     def fakeApp(): FakeApplication =
       FakeApplication(additionalConfiguration = inMemoryDatabase())
 
-    "work as expected" in new WithApplication(fakeApp) {
+    "write and read users" in new WithApplication(fakeApp) {
       val dao = new DAO(DB.driver)
 
       DB.withSession { implicit s: Session =>
@@ -22,6 +22,19 @@ class DAOSpec extends Specification {
 
         dao.users.insertAll(users:_*)
         dao.users.list must_== users
+      }
+    }
+
+    "write and read interactions" in new WithApplication(fakeApp) {
+      val dao = new DAO(DB.driver)
+
+      DB.withSession { implicit s: Session =>
+        val interactions: Seq[Interaction] = Seq(
+          Interaction("1", "2", 3),
+          Interaction("4", "5", 6))
+
+        dao.interactions.insertAll(interactions:_*)
+        dao.interactions.list must_== interactions
       }
     }
   }

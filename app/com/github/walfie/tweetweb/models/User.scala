@@ -31,7 +31,7 @@ trait UserComponent {
 
     def * = (id, name, iconUrl, updatedAt) <> ((User.apply _).tupled, User.unapply _)
 
-    def pk = primaryKey("pk_id", id)
+    def pk = primaryKey("pk_users", id)
   }
 }
 
