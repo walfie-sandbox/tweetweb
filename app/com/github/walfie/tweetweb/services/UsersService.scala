@@ -9,6 +9,7 @@ import com.github.walfie.tweetweb.util.PortableJodaSupport._
 
 trait UsersService {
   def save(user: User): Unit
+  def saveAll(users: Iterable[User]): Unit
   def find(
       ids: Iterable[String],
       updatedSince: DateTime = new DateTime(0)): List[User]
@@ -27,6 +28,8 @@ class SlickUsersService(
       dao.users.insertOrUpdate(user).run
     }
   }
+
+  def saveAll(users: Iterable[User]): Unit = users.foreach(save)
 
   def find(
       ids: Iterable[String],

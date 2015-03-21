@@ -47,6 +47,17 @@ class UsersServiceSpec extends Specification with Mockito {
       }
     }
 
+    "saveAll" should {
+      "save all specified users" in new WithApplication(fakeApp) {
+        val dao = new DAO(DB.driver)
+        val usersService = new SlickUsersService(DB, dao)
+
+        val users: List[User] = List(User("1"), User("2"), User("3"))
+        usersService.saveAll(users)
+        usersService.find(List("1", "2", "3")) must_== users
+      }
+    }
+
     "find" should {
       "return found users" in new WithApplication(fakeApp) {
         val dao = new DAO(DB.driver)
@@ -69,10 +80,10 @@ class UsersServiceSpec extends Specification with Mockito {
         val dao = new DAO(DB.driver)
         val usersService = new SlickUsersService(DB, dao)
 
-        val user1: User = User(id = "1", updatedAt = new DateTime(0))
-        val user2: User = User(id = "2", updatedAt = new DateTime(1))
-        val user3: User = User(id = "3", updatedAt = new DateTime(2))
-        List(user1, user2, user3).foreach(usersService.save)
+        val user1 = User(id = "1", updatedAt = new DateTime(0))
+        val user2 = User(id = "2", updatedAt = new DateTime(1))
+        val user3 = User(id = "3", updatedAt = new DateTime(2))
+        usersService.saveAll(List(user1, user2, user3))
 
         usersService.find(List("1", "2", "3"), new DateTime(1)) must_== List(user2, user3)
       }
