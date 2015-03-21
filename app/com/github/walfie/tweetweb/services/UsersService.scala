@@ -10,9 +10,8 @@ import com.github.walfie.tweetweb.util.PortableJodaSupport._
 trait UsersService {
   def save(user: User): Unit
   def saveAll(users: Iterable[User]): Unit
-  def find(
-      ids: Iterable[String],
-      updatedSince: DateTime = new DateTime(0)): List[User]
+  def find(ids: Iterable[String]): List[User]
+  def deleteOld(maxUpdatedAt: DateTime): Unit
 }
 
 trait UsersServiceComponent {
@@ -23,6 +22,8 @@ class SlickUsersService(
     db: Database,
     dao: DAO) extends UsersService {
 
+  import dao.profile.simple.queryToDeleteInvoker // Implicit required for `delete`
+
   def save(user: User): Unit = {
     db.withSession { implicit session =>
       dao.users.insertOrUpdate(user).run
@@ -31,14 +32,15 @@ class SlickUsersService(
 
   def saveAll(users: Iterable[User]): Unit = users.foreach(save)
 
-  def find(
-      ids: Iterable[String],
-      updatedSince: DateTime = new DateTime(0)): List[User] = {
+  def find(ids: Iterable[String]): List[User] = {
     db.withSession { implicit session =>
-      dao.users.filter { user =>
-        user.id.inSetBind(ids) &&
-        user.updatedAt >= updatedSince
-      }.list
+      dao.users.filter(_.id.inSetBind(ids)).list
+    }
+  }
+
+  def deleteOld(maxUpdatedAt: DateTime): Unit = {
+    db.withSession { implicit session =>
+      dao.users.filter(_.updatedAt < maxUpdatedAt).delete
     }
   }
 }
